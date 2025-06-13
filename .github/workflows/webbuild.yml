@@ -22,13 +22,16 @@ jobs:
         with:
           version: 3.1.66
 
+      - name: List repo root contents (debug)
+        run: ls -la
+
       - name: Build engine with emmake
         run: |
-          cd xash3d-fwgs/engine
+          cd engine
           emmake make -j4
-          
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: xash3d-wasm-build
-          path: xash3d-fwgs/engine/bin
+          path: engine/bin
