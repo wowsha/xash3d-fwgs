@@ -1,0 +1,52 @@
+name: Build Xash3D for WebAssembly
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      EM_VERSION: 3.1.66
+      EM_CACHE_FOLDER: 'emsdk-cache'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ env.EM_VERSION }}
+          actions-cache-folder: ${{ env.EM_CACHE_FOLDER }}
+
+      - name: Configure CMake for WASM
+        run: |
+          mkdir build-wasm
+          cd build-wasm
+          emcmake cmake .. \
+            -DXASH_SDL=ON \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build with make
+        run: |
+          cd build-wasm
+          emmake make -j4
+
+      - name: Archive WebAssembly build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: xash3d-wasm-build
+          path: build-wasm/
