@@ -1,4 +1,4 @@
-name: Build Xash3D WASM
+name: Build Xash3D Engine for WebAssembly
 
 on:
   push:
@@ -17,21 +17,24 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Emscripten
+      - name: Set up Emscripten
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: 3.1.66
 
-      - name: List repo root contents (debug)
-        run: ls -la
-
-      - name: Build engine with emmake
+      - name: Install dependencies
         run: |
-          cd engine
-          emmake make -j4
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+
+      - name: Build engine with waf
+        run: |
+          cd xash3d-fwgs
+          ./waf configure --emscripten
+          ./waf build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: xash3d-wasm-build
-          path: engine/bin
+          path: xash3d-fwgs/build/emscripten
